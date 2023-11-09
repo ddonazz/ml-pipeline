@@ -5,8 +5,8 @@ import it.utiu.thesis.base.AbstractClassificationTrainerActor
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.classification.{DecisionTreeClassifier, LogisticRegression, RandomForestClassifier}
 import org.apache.spark.ml.feature.VectorAssembler
-import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
@@ -36,7 +36,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     println("test count:" + testCount)
 
     //(modelName, model, predictions, (train count, test count))
-    val evals = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
+    val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
 
     //LOGISTIC REGRESSION CLASSIFIER
     val lr = new LogisticRegression().setMaxIter(3).setRegParam(0.3).setElasticNetParam(0.8)
@@ -45,7 +45,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .setFamily("multinomial")
     val modelLR = lr.fit(trainingData)
     val predictionsLR = modelLR.transform(testData)
-    evals.append(("LogisticRegression", modelLR, predictionsLR, (trainCount, testCount)))
+    eval.append(("LogisticRegression", modelLR, predictionsLR, (trainCount, testCount)))
 
     //DECISION TREES CLASSIFIER
     val dt = new DecisionTreeClassifier()
@@ -53,7 +53,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .setFeaturesCol("features")
     val modelDT = dt.fit(trainingData)
     val predictionsDT = modelDT.transform(testData)
-    evals.append(("DecisionTreeClassifier", modelDT, predictionsDT, (trainCount, testCount)))
+    eval.append(("DecisionTreeClassifier", modelDT, predictionsDT, (trainCount, testCount)))
 
     //RANDOM FOREST CLASSIFIER
     val rf = new RandomForestClassifier()
@@ -62,13 +62,13 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .setNumTrees(10)
     val modelRF = rf.fit(trainingData)
     val predictionsRF = modelRF.transform(testData)
-    evals.append(("RandomForestClassifier", modelRF, predictionsRF, (trainCount, testCount)))
+    eval.append(("RandomForestClassifier", modelRF, predictionsRF, (trainCount, testCount)))
 
     //build confusion matrix for each classifier
     computeConfusionMatrix(predictionsLR)
     computeConfusionMatrix(predictionsDT)
     computeConfusionMatrix(predictionsRF)
 
-    evals.toList
+    eval.toList
   }
 }

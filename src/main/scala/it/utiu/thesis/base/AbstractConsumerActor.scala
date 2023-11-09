@@ -41,14 +41,14 @@ abstract class AbstractConsumerActor(topic: String, header: String) extends Abst
 
     //received prediction message
     case AbstractPredictorActor.TellPrediction(prediction, input) =>
-      log.info("received prediction: " + prediction)
+      log.info("Received prediction: " + prediction)
       val txtOut = dateFormat.format(new Date()) + "," + input + "," + prediction + "\n"
       writeFile(RT_OUTPUT_FILE, txtOut, Some(StandardOpenOption.APPEND))
 
   }
 
   private def doConsuming(): Unit = {
-    log.info("start consuming for diabetes...")
+    log.info("Start consuming for diabetes...")
     implicit val materializer: ActorMaterializer = ActorMaterializer()
 
     val consumerSettings = ConsumerSettings(context.system, new ByteArrayDeserializer, new StringDeserializer)
@@ -59,14 +59,14 @@ abstract class AbstractConsumerActor(topic: String, header: String) extends Abst
       Consumer.plainSource(consumerSettings, Subscriptions.topics(topic))
         .mapAsync(1) { msg =>
           val strMsg = msg.value
-          log.info(s"received message value: $strMsg")
+          log.info(s"Received message value: $strMsg")
           val isPredictionReq = isPredictionRequest(strMsg)
           if (!isPredictionReq || isAlwaysInput) {
             //input for training action
             buffer.append(strMsg)
             if (buffer.size == BUFF_SIZE) {
               //dump data to HDFS
-              log.info("dump " + buffer.size + " input messages to HDFS")
+              log.info("Dump " + buffer.size + " input messages to HDFS")
               try {
                 val path = new Path(HDFS_CS_INPUT_PATH + "diabetes.input." + new Date().getTime)
                 val conf = new Configuration()
