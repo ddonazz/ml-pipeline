@@ -6,11 +6,10 @@ import it.utiu.thesis.utils.Costants
 
 
 object DiabetesConsumerActor {
-
-  val header = "Diabetes_binary,HighBP,HighChol,CholCheck,BMI,Smoker,Stroke,HeartDiseaseorAttack,PhysActivity,Fruits,Veggies,HvyAlcoholConsump,AnyHealthcare,NoDocbcCost,GenHlth,MentHlth,PhysHlth,DiffWalk,Sex,Age,Education,Income"
-  private val COLS_NUM = 21
-
   def props(): Props = Props(new DiabetesConsumerActor())
+
+  val header = ""
+  private val COLS_NUM = 21
 }
 
 class DiabetesConsumerActor extends AbstractConsumerActor(Costants.TOPIC_DIABETES, DiabetesConsumerActor.header) {

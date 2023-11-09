@@ -31,8 +31,8 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
 
   private def getInput(msg: String): String = msg
 
-  private def doPrediction(msgs: String): String = {
-    log.info("start prediction...")
+  private def doPrediction(msg: String): String = {
+    log.info("Start prediction...")
 
     if (mlModel == null) {
       if (!Files.exists(Paths.get(ML_MODEL_FILE))) return null
@@ -40,13 +40,13 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
     }
 
     //invoke internal
-    val prediction = doInternalPrediction(msgs, spark, mlModel)
+    val prediction = doInternalPrediction(msg, spark, mlModel)
 
     prediction
   }
 
   private def loadModelFromDisk(): Transformer = {
-    log.info("restoring model " + ML_MODEL_FILE_COPY + " from disk...")
+    log.info("Restoring model " + ML_MODEL_FILE_COPY + " from disk...")
     //delete old copy-of-model
     FileUtils.deleteDirectory(new File(ML_MODEL_FILE_COPY))
     //create a fresh copy-of-model
@@ -71,6 +71,6 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
 
     case AbstractTrainerActor.TrainingFinished(model: Transformer) =>
       context.become(onMessage(model))
-      log.info("reloaded model " + mlModel + " just built")
+      log.info("Reloaded model " + mlModel + " just built")
   }
 }

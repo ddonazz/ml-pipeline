@@ -35,7 +35,8 @@ abstract class AbstractBaseActor extends Actor with ActorLogging {
   val RT_OUTPUT_FILE: String = RT_OUTPUT_PATH + "diabetes-prediction.csv"
   val ANALYTICS_OUTPUT_FILE: String = RT_OUTPUT_PATH + "diabetes-stats.csv"
   //date pattern for csv
-  val dateFormat = new SimpleDateFormat("yyMMdd HH:mm")
+  val dateFormat = new
+      SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
   private val RT_PATH = "./rt/diabetes/"
   //Spark objects
   var spark: SparkSession = _

@@ -20,11 +20,11 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
   override def doInternalTraining(spark: SparkSession): List[(String, Transformer, DataFrame, (Long, Long))] = {
 
     //load dataset from csv inferring schema from header
-    val df1 = spark.read.format("csv").option("header", "false").option("inferSchema", "true").load(HDFS_CS_PATH + "*").toDF("_1", "_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9").withColumn("label", col("_9"))
+    val df1 = spark.read.format("csv").option("header", "false").option("inferSchema", "true").load(HDFS_CS_PATH + "*").toDF("_1", "_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21").withColumn("label", col("_1"))
     df1.show
 
     //define features
-    val assembler = new VectorAssembler().setInputCols(Array("_1", "_2", "_3", "_4", "_5", "_6", "_7", "_8")).setOutputCol("features")
+    val assembler = new VectorAssembler().setInputCols(Array("_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21")).setOutputCol("features")
     val df2 = assembler.transform(df1)
 
     //define training and test sets randomly splitted
@@ -32,8 +32,8 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val Array(trainingData, testData) = df2.randomSplit(Array(0.7, 0.3), splitSeed)
     val trainCount = trainingData.count()
     val testCount = testData.count()
-    println("training count:" + trainCount)
-    println("test count:" + testCount)
+    println("Training count:" + trainCount)
+    println("Test count:" + testCount)
 
     //(modelName, model, predictions, (train count, test count))
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()

@@ -16,19 +16,19 @@ abstract class AbstractProducerActor extends AbstractBaseActor {
   }
 
   private def doProduce(): Unit = {
-    log.info("start producing for diabetes...")
+    log.info("Start producing for diabetes...")
     val watchService = FileSystems.getDefault.newWatchService()
     Paths.get(RT_INPUT_PATH).register(watchService, ENTRY_CREATE)
 
     while (true) {
-      log.info("waiting new files from " + RT_INPUT_PATH + "...")
+      log.info("Waiting new files from " + RT_INPUT_PATH + "...")
       val key = watchService.take()
       key.pollEvents().asScala.foreach(e => {
         e.kind() match {
           case ENTRY_CREATE =>
             val dir = key.watchable().asInstanceOf[Path]
             val fullPath = dir.resolve(e.context().toString)
-            log.info("what service event received: [" + fullPath + "] created")
+            log.info("What service event received: [" + fullPath + "] created")
             elaborationFile(fullPath.toString)
           case _ =>
             println("?")
@@ -42,7 +42,7 @@ abstract class AbstractProducerActor extends AbstractBaseActor {
 
   private def elaborationFile(filePath: String): Unit = {
     Thread.sleep(500)
-    log.info("process file " + filePath)
+    log.info("Process file " + filePath)
   }
 
 }
