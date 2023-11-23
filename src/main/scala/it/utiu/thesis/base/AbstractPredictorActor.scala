@@ -55,6 +55,8 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
       case "org.apache.spark.ml.classification.LogisticRegressionModel" => LogisticRegressionModel.read.load(ML_MODEL_FILE_COPY)
       case "org.apache.spark.ml.classification.DecisionTreeClassificationModel" => DecisionTreeClassificationModel.read.load(ML_MODEL_FILE_COPY)
       case "org.apache.spark.ml.classification.RandomForestClassificationModel" => RandomForestClassificationModel.read.load(ML_MODEL_FILE_COPY)
+
+      case _ => throw new IllegalArgumentException(s"Unsupported algorithm: $algo")
     }
   }
 

@@ -16,7 +16,6 @@ object AbstractBaseActor {
 }
 
 abstract class AbstractBaseActor extends Actor with ActorLogging {
-
   val SPARK_URL_TRAINING: String = context.system.settings.config.getString("tapas.spark.trainer")
   val SPARK_URL_PREDICTION: String = context.system.settings.config.getString("tapas.spark.predictor")
   val SPARK_URL_ANALYSIS: String = context.system.settings.config.getString("tapas.spark.analyzer")
@@ -29,11 +28,9 @@ abstract class AbstractBaseActor extends Actor with ActorLogging {
   val RT_INPUT_PATH: String = RT_PATH + "input/"
   val RT_OUTPUT_PATH: String = RT_PATH + "output/"
   val RT_OUTPUT_FILE: String = RT_OUTPUT_PATH + "diabetes-prediction.csv"
-  val ANALYTICS_OUTPUT_FILE: String = RT_OUTPUT_PATH + "diabetes-stats.csv"
-
-  val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+  val dateFormat = new SimpleDateFormat(DATE_FORMAT)
   private val RT_PATH = "./rt/diabetes/"
-  //Spark objects
+  private val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
   var spark: SparkSession = _
   var sc: SparkContext = _
   var conf: SparkConf = _

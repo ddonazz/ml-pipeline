@@ -14,7 +14,6 @@ import scala.language.postfixOps
 object Runner {
 
   def main(args: Array[String]): Unit = {
-    //create akka system
     val system = ActorSystem("diabetes")
     println("Starting DIABETES at " + new Date() + "...")
     val app = new Runner(system)
@@ -23,7 +22,6 @@ object Runner {
 }
 
 class Runner(system: ActorSystem) {
-  //define actors
   private var trainerRef: ActorRef = _
   private var predictorRef: ActorRef = _
   private var consumerRef: ActorRef = _
@@ -31,24 +29,18 @@ class Runner(system: ActorSystem) {
   private var feederRef: ActorRef = _
 
   def run(): Unit = {
-
-    //creazione degli attori
     trainerRef = system.actorOf(DiabetesTrainerActor.props(), "trainer-activity")
     predictorRef = system.actorOf(DiabetesPredictorActor.props(), "predictor-activity")
     consumerRef = system.actorOf(DiabetesConsumerActor.props(), "consumer-activity")
     producerRef = system.actorOf(DiabetesProducerActor.props(), "producer-activity")
     feederRef = system.actorOf(DiabetesProducerActor.props(), "feeder-activity")
 
-    //partenza degli attori
     Thread.sleep(2000)
-    //consumer
     consumerRef ! AbstractConsumerActor.StartConsuming()
     Thread.sleep(2000)
-    //producer
     producerRef ! AbstractProducerActor.StartProducing()
     Thread.sleep(2000)
     system.scheduler.scheduleOnce(1 minute) {
-      //trainer
       trainerRef ! AbstractTrainerActor.StartTraining()
     }
 

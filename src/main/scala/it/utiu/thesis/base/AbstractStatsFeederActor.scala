@@ -4,6 +4,7 @@ import it.utiu.thesis.base.AbstractStatsFeederActor.{AskStats, TellStats}
 
 object AbstractStatsFeederActor {
   case class AskStats()
+
   case class TellStats(strCSV: String)
 }
 
