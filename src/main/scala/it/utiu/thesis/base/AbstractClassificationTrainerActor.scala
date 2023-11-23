@@ -37,7 +37,6 @@ abstract class AbstractClassificationTrainerActor extends AbstractTrainerActor {
     }
     val predictionAndLabels = sc.parallelize(buff)
 
-    // Instantiate metrics object
     val metrics = new MulticlassMetrics(predictionAndLabels)
 
     println("Confusion matrix:")

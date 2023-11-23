@@ -9,7 +9,6 @@ import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.text.SimpleDateFormat
 
 object AbstractBaseActor {
-  //static application params
   val HDFS_URL = "hdfs://localhost:9000/"
   val KAFKA_BOOT_SVR = "localhost:9092"
   val KAFKA_GROUP_ID = "group1"
@@ -18,25 +17,21 @@ object AbstractBaseActor {
 
 abstract class AbstractBaseActor extends Actor with ActorLogging {
 
-  //set URLs
   val SPARK_URL_TRAINING: String = context.system.settings.config.getString("tapas.spark.trainer")
   val SPARK_URL_PREDICTION: String = context.system.settings.config.getString("tapas.spark.predictor")
   val SPARK_URL_ANALYSIS: String = context.system.settings.config.getString("tapas.spark.analyzer")
 
-  //dynamic application params
   val HDFS_CS_PATH: String = HDFS_URL + "/diabetes/"
   val HDFS_CS_INPUT_PATH: String = HDFS_CS_PATH + "input/"
 
-  //file paths
   val ML_MODEL_FILE = "./ml-model/diabetes/"
   val ML_MODEL_FILE_COPY = "./ml-model/diabetes_copy/"
   val RT_INPUT_PATH: String = RT_PATH + "input/"
   val RT_OUTPUT_PATH: String = RT_PATH + "output/"
   val RT_OUTPUT_FILE: String = RT_OUTPUT_PATH + "diabetes-prediction.csv"
   val ANALYTICS_OUTPUT_FILE: String = RT_OUTPUT_PATH + "diabetes-stats.csv"
-  //date pattern for csv
-  val dateFormat = new
-      SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+
+  val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
   private val RT_PATH = "./rt/diabetes/"
   //Spark objects
   var spark: SparkSession = _
@@ -64,15 +59,12 @@ abstract class AbstractBaseActor extends Actor with ActorLogging {
   }
 
   protected def initSpark(task: String, url: String): Unit = {
-    //Spark Configuration
     conf = new SparkConf().setAppName("diabetes-" + task).setMaster(url)
       .set("fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem")
       .set("fs.file.impl", "org.apache.hadoop.fs.LocalFileSystem")
 
-    //Spark Session
     spark = SparkSession.builder.config(conf).getOrCreate()
 
-    //Spark Context
     sc = spark.sparkContext
     sc.setLogLevel("ERROR")
   }

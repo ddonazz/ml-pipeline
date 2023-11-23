@@ -12,10 +12,8 @@ import java.nio.file.{Files, Paths}
 import scala.io.Source.fromFile
 
 object AbstractPredictorActor {
-  //ask prediction message
   case class AskPrediction(messages: String)
 
-  //tell prediction message
   case class TellPrediction(prediction: String, input: String)
 }
 
@@ -39,7 +37,6 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
       context.become(onMessage(loadModelFromDisk()))
     }
 
-    //invoke internal
     val prediction = doInternalPrediction(msg, spark, mlModel)
 
     prediction
@@ -47,11 +44,8 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
 
   private def loadModelFromDisk(): Transformer = {
     log.info("Restoring model " + ML_MODEL_FILE_COPY + " from disk...")
-    //delete old copy-of-model
     FileUtils.deleteDirectory(new File(ML_MODEL_FILE_COPY))
-    //create a fresh copy-of-model
     FileUtils.copyDirectory(new File(ML_MODEL_FILE), new File(ML_MODEL_FILE_COPY), true)
-    //load copy-of-model
     val algo = fromFile(ML_MODEL_FILE + ".algo").getLines().next()
     algo match {
       case "org.apache.spark.ml.regression.LinearRegressionModel" => LinearRegressionModel.read.load(ML_MODEL_FILE_COPY)

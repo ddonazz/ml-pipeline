@@ -35,7 +35,6 @@ abstract class AbstractProducerActor extends AbstractBaseActor {
         }
       })
       key.reset()
-      //wait x seconds before read again
       Thread.sleep(10000)
     }
   }

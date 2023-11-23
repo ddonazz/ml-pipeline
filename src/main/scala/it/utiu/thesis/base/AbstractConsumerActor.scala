@@ -20,26 +20,20 @@ import scala.concurrent.Future
 import scala.util.Properties
 
 object AbstractConsumerActor {
-  //max buffered items to store
   val BUFF_SIZE = 5
 
-  //start consuming message
   case class StartConsuming()
 }
 
 abstract class AbstractConsumerActor(topic: String, header: String) extends AbstractBaseActor {
 
   private val predictor = context.actorSelection("/user/predictor-diabetes")
-  //buffered messages to store
   private val buffer = ArrayBuffer[String]()
 
   override def receive: Receive = {
-    //start consuming message
     case AbstractConsumerActor.StartConsuming() =>
       doConsuming()
 
-
-    //received prediction message
     case AbstractPredictorActor.TellPrediction(prediction, input) =>
       log.info("Received prediction: " + prediction)
       val txtOut = dateFormat.format(new Date()) + "," + input + "," + prediction + "\n"
@@ -62,10 +56,8 @@ abstract class AbstractConsumerActor(topic: String, header: String) extends Abst
           log.info(s"Received message value: $strMsg")
           val isPredictionReq = isPredictionRequest(strMsg)
           if (!isPredictionReq || isAlwaysInput) {
-            //input for training action
             buffer.append(strMsg)
             if (buffer.size == BUFF_SIZE) {
-              //dump data to HDFS
               log.info("Dump " + buffer.size + " input messages to HDFS")
               try {
                 val path = new Path(HDFS_CS_INPUT_PATH + "diabetes.input." + new Date().getTime)
@@ -82,11 +74,10 @@ abstract class AbstractConsumerActor(topic: String, header: String) extends Abst
                 case t: Throwable => log.info(t.toString)
               }
               buffer.clear()
-            } else log.info("input messages buffered")
+            } else log.info("Input messages buffered")
           }
           if (isPredictionReq) {
-            //input for prediction action
-            log.info("request prediction for: " + strMsg)
+            log.info("Request prediction for: " + strMsg)
             predictor ! AbstractPredictorActor.AskPrediction(strMsg)
           }
           Future.successful(Done)
@@ -96,7 +87,6 @@ abstract class AbstractConsumerActor(topic: String, header: String) extends Abst
     done.onComplete(_ => return)
   }
 
-  //internal
   def isPredictionRequest(row: String): Boolean = false
 
   private def isAlwaysInput: Boolean = false
