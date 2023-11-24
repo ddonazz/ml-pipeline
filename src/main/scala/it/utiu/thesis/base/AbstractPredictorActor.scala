@@ -4,7 +4,6 @@ import it.utiu.thesis.base.AbstractPredictorActor.{AskPrediction, TellPrediction
 import org.apache.commons.io.FileUtils
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.classification.{DecisionTreeClassificationModel, LogisticRegressionModel, RandomForestClassificationModel}
-import org.apache.spark.ml.regression.{DecisionTreeRegressionModel, GBTRegressionModel, LinearRegressionModel, RandomForestRegressionModel}
 import org.apache.spark.sql.SparkSession
 
 import java.io.File
@@ -48,10 +47,6 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
     FileUtils.copyDirectory(new File(ML_MODEL_FILE), new File(ML_MODEL_FILE_COPY), true)
     val algo = fromFile(ML_MODEL_FILE + ".algo").getLines().next()
     algo match {
-      case "org.apache.spark.ml.regression.LinearRegressionModel" => LinearRegressionModel.read.load(ML_MODEL_FILE_COPY)
-      case "org.apache.spark.ml.regression.DecisionTreeRegressorModel" => DecisionTreeRegressionModel.read.load(ML_MODEL_FILE_COPY)
-      case "org.apache.spark.ml.regression.RandomForestRegressionModel" => RandomForestRegressionModel.read.load(ML_MODEL_FILE_COPY)
-      case "org.apache.spark.ml.regression.GBTRegressionModel" => GBTRegressionModel.read.load(ML_MODEL_FILE_COPY)
       case "org.apache.spark.ml.classification.LogisticRegressionModel" => LogisticRegressionModel.read.load(ML_MODEL_FILE_COPY)
       case "org.apache.spark.ml.classification.DecisionTreeClassificationModel" => DecisionTreeClassificationModel.read.load(ML_MODEL_FILE_COPY)
       case "org.apache.spark.ml.classification.RandomForestClassificationModel" => RandomForestClassificationModel.read.load(ML_MODEL_FILE_COPY)
