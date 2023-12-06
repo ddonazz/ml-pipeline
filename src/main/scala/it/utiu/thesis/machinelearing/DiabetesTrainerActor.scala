@@ -38,7 +38,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val lr = new LogisticRegression().setMaxIter(3).setRegParam(0.3).setElasticNetParam(0.8)
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setFamily("multinomial")
+      .setFamily("auto")
     val modelLR = lr.fit(trainingData)
     val predictionsLR = modelLR.transform(testData)
     eval.append(("LogisticRegression", modelLR, predictionsLR, (trainCount, testCount)))

@@ -16,21 +16,21 @@ object AbstractBaseActor {
 }
 
 abstract class AbstractBaseActor extends Actor with ActorLogging {
-  val SPARK_URL_TRAINING: String = context.system.settings.config.getString("tapas.spark.trainer")
-  val SPARK_URL_PREDICTION: String = context.system.settings.config.getString("tapas.spark.predictor")
-  val SPARK_URL_ANALYSIS: String = context.system.settings.config.getString("tapas.spark.analyzer")
+  val SPARK_URL_TRAINING: String = context.system.settings.config.getString("spark.trainer")
+  val SPARK_URL_PREDICTION: String = context.system.settings.config.getString("spark.predictor")
+  val SPARK_URL_ANALYSIS: String = context.system.settings.config.getString("spark.analyzer")
 
   val HDFS_CS_PATH: String = HDFS_URL + "/diabetes/"
   val HDFS_CS_INPUT_PATH: String = HDFS_CS_PATH + "input/"
 
   val ML_MODEL_FILE = "./ml-model/diabetes/"
   val ML_MODEL_FILE_COPY = "./ml-model/diabetes_copy/"
+  private val RT_PATH = "./rt/diabetes/"
   val RT_INPUT_PATH: String = RT_PATH + "input/"
   val RT_OUTPUT_PATH: String = RT_PATH + "output/"
   val RT_OUTPUT_FILE: String = RT_OUTPUT_PATH + "diabetes-prediction.csv"
-  val dateFormat = new SimpleDateFormat(DATE_FORMAT)
-  private val RT_PATH = "./rt/diabetes/"
   private val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+  val dateFormat = new SimpleDateFormat(DATE_FORMAT)
   var spark: SparkSession = _
   var sc: SparkContext = _
   var conf: SparkConf = _
@@ -56,7 +56,8 @@ abstract class AbstractBaseActor extends Actor with ActorLogging {
   }
 
   protected def initSpark(task: String, url: String): Unit = {
-    conf = new SparkConf().setAppName("diabetes-" + task).setMaster(url)
+    conf = new SparkConf()
+      .setAppName("diabetes-" + task).setMaster(url)
       .set("fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem")
       .set("fs.file.impl", "org.apache.hadoop.fs.LocalFileSystem")
 

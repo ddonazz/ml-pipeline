@@ -1,6 +1,6 @@
 package it.utiu.thesis.utils
 
-object Costants {
+object Constants {
   //list of all kafka topics
   val TOPIC_DIABETES = "diabetes"
 }

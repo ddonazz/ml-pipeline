@@ -25,14 +25,14 @@ abstract class AbstractTrainerActor extends AbstractBaseActor {
       doTraining()
 
     case TrainingFinished(_: Transformer) =>
-      log.info("training restart waiting...")
+      log.info("Training restart waiting...")
       Thread.sleep(AbstractBaseActor.LOOP_DELAY)
-      log.info("restart training")
+      log.info("Restart training")
       doTraining()
   }
 
   private def doTraining(): Unit = {
-    log.info("start training...")
+    log.info("Start training...")
 
     val evals = doInternalTraining(spark)
 
@@ -43,15 +43,12 @@ abstract class AbstractTrainerActor extends AbstractBaseActor {
     }
     val fittest = metrics.maxBy(_._2)._1
 
-    log.info("saving ml model into " + ML_MODEL_FILE + "...")
+    log.info("Saving ML Model into " + ML_MODEL_FILE + "...")
     fittest.asInstanceOf[MLWritable].write.overwrite().save(ML_MODEL_FILE)
     writeFile(ML_MODEL_FILE + ".algo", fittest.getClass.getName, None)
-    log.info("saved ml model into " + ML_MODEL_FILE + "...")
+    log.info("Saved ML Model into " + ML_MODEL_FILE + "...")
 
-    context.actorSelection {
-      "/user/predictor-diabetes"
-    } ! TrainingFinished(fittest)
-
+    context.actorSelection {"/user/predictor-diabetes"} ! TrainingFinished(fittest)
     self ! AbstractTrainerActor.TrainingFinished(fittest)
   }
 
