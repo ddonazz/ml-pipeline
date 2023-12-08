@@ -43,6 +43,8 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val predictionsLR = modelLR.transform(testData)
     eval.append(("LogisticRegression", modelLR, predictionsLR, (trainCount, testCount)))
 
+    println("LogisticRegression")
+
     //DECISION TREES CLASSIFIER
     val dt = new DecisionTreeClassifier()
       .setLabelCol("label")
@@ -50,6 +52,8 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val modelDT = dt.fit(trainingData)
     val predictionsDT = modelDT.transform(testData)
     eval.append(("DecisionTreeClassifier", modelDT, predictionsDT, (trainCount, testCount)))
+
+    println("DecisionTreeClassifier")
 
     //RANDOM FOREST CLASSIFIER
     val rf = new RandomForestClassifier()
@@ -60,9 +64,16 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val predictionsRF = modelRF.transform(testData)
     eval.append(("RandomForestClassifier", modelRF, predictionsRF, (trainCount, testCount)))
 
+    println("RandomForestClassifier")
+
     computeConfusionMatrix(predictionsLR)
+    println("predictionsLR")
+
     computeConfusionMatrix(predictionsDT)
+    println("predictionsDT")
+
     computeConfusionMatrix(predictionsRF)
+    println("predictionsRF")
 
     eval.toList
   }

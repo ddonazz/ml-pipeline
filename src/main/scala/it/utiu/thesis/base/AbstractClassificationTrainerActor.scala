@@ -33,7 +33,7 @@ abstract class AbstractClassificationTrainerActor extends AbstractTrainerActor {
     val locTest = test.collect()
     val buff = ArrayBuffer[(Double, Double)]()
     for (r <- locTest) {
-      buff.append((r.getAs[Double]("prediction"), r.getAs[Int]("label").toDouble))
+      buff.append((r.getAs[Double]("prediction"), r.getAs[Double]("label")))
     }
     val predictionAndLabels = sc.parallelize(buff)
 

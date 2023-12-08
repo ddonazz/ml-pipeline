@@ -9,7 +9,7 @@ import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.text.SimpleDateFormat
 
 object AbstractBaseActor {
-  val HDFS_URL = "hdfs://localhost:9000/"
+  val HDFS_URL = "hdfs://localhost:9000/user/andrea/"
   val KAFKA_BOOT_SVR = "localhost:9092"
   val KAFKA_GROUP_ID = "group1"
   val LOOP_DELAY = 600000

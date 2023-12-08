@@ -24,7 +24,7 @@ abstract class AbstractAnalyzerActor() extends AbstractBaseActor() {
   }
 
   private def doAnalysis(): Unit = {
-    log.info("start analysis...")
+    log.info("Start analysis...")
 
     val stats = doInternalAnalysis(spark)
     val buff = new StringBuilder()
