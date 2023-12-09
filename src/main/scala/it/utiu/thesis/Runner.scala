@@ -29,11 +29,11 @@ class Runner(system: ActorSystem) {
   private var feederRef: ActorRef = _
 
   def run(): Unit = {
-    trainerRef = system.actorOf(DiabetesTrainerActor.props(), "trainer-activity")
-    predictorRef = system.actorOf(DiabetesPredictorActor.props(), "predictor-activity")
-    consumerRef = system.actorOf(DiabetesConsumerActor.props(), "consumer-activity")
-    producerRef = system.actorOf(DiabetesProducerActor.props(), "producer-activity")
-    feederRef = system.actorOf(DiabetesProducerActor.props(), "feeder-activity")
+    trainerRef = system.actorOf(DiabetesTrainerActor.props(), "trainer-diabetes")
+    predictorRef = system.actorOf(DiabetesPredictorActor.props(), "predictor-diabetes")
+    consumerRef = system.actorOf(DiabetesConsumerActor.props(), "consumer-diabetes")
+    producerRef = system.actorOf(DiabetesProducerActor.props(), "producer-diabetes")
+    feederRef = system.actorOf(DiabetesProducerActor.props(), "feeder-diabetes")
 
     Thread.sleep(2000)
     consumerRef ! AbstractConsumerActor.StartConsuming()

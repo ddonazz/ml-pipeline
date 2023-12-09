@@ -19,10 +19,10 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
 
   override def doInternalTraining(spark: SparkSession): List[(String, Transformer, DataFrame, (Long, Long))] = {
 
-    val df1 = spark.read.format("csv").option("header", "false").option("inferSchema", "true").load(HDFS_CS_PATH + "*").toDF("_1", "_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21").withColumn("label", col("_1"))
+    val df1 = spark.read.format("csv").option("header", "false").option("inferSchema", "true").load(HDFS_CS_PATH + "*").toDF("_1", "_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21", "_22").withColumn("label", col("_1"))
     df1.show
 
-    val assembler = new VectorAssembler().setInputCols(Array("_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21")).setOutputCol("features")
+    val assembler = new VectorAssembler().setInputCols(Array("_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21", "_22")).setOutputCol("features")
     val df2 = assembler.transform(df1)
 
     val splitSeed = new Random().nextInt()
@@ -43,8 +43,6 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val predictionsLR = modelLR.transform(testData)
     eval.append(("LogisticRegression", modelLR, predictionsLR, (trainCount, testCount)))
 
-    println("LogisticRegression")
-
     //DECISION TREES CLASSIFIER
     val dt = new DecisionTreeClassifier()
       .setLabelCol("label")
@@ -52,8 +50,6 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val modelDT = dt.fit(trainingData)
     val predictionsDT = modelDT.transform(testData)
     eval.append(("DecisionTreeClassifier", modelDT, predictionsDT, (trainCount, testCount)))
-
-    println("DecisionTreeClassifier")
 
     //RANDOM FOREST CLASSIFIER
     val rf = new RandomForestClassifier()
@@ -64,16 +60,9 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val predictionsRF = modelRF.transform(testData)
     eval.append(("RandomForestClassifier", modelRF, predictionsRF, (trainCount, testCount)))
 
-    println("RandomForestClassifier")
-
     computeConfusionMatrix(predictionsLR)
-    println("predictionsLR")
-
     computeConfusionMatrix(predictionsDT)
-    println("predictionsDT")
-
     computeConfusionMatrix(predictionsRF)
-    println("predictionsRF")
 
     eval.toList
   }

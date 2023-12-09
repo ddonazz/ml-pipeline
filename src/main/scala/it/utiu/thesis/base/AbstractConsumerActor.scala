@@ -20,7 +20,7 @@ import scala.concurrent.Future
 import scala.util.Properties
 
 object AbstractConsumerActor {
-  val BUFF_SIZE = 5
+  val BUFF_SIZE = 21
 
   case class StartConsuming()
 }
@@ -55,6 +55,7 @@ abstract class AbstractConsumerActor(topic: String, header: String) extends Abst
           val strMsg = msg.value
           log.info(s"Received message value: $strMsg")
           val isPredictionReq = isPredictionRequest(strMsg)
+          log.info("Is prediction: " + isPredictionReq)
           if (!isPredictionReq || isAlwaysInput) {
             buffer.append(strMsg)
             if (buffer.size == BUFF_SIZE) {

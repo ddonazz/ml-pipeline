@@ -7,7 +7,7 @@ import it.utiu.thesis.utils.Constants
 
 object DiabetesConsumerActor {
   val header = ""
-  private val COLS_NUM = 21
+  private val COLS_NUM = 22
 
   def props(): Props = Props(new DiabetesConsumerActor())
 }
