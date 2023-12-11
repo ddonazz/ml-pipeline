@@ -35,33 +35,43 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
 
     //LOGISTIC REGRESSION CLASSIFIER
-    val lr = new LogisticRegression().setMaxIter(3).setRegParam(0.3).setElasticNetParam(0.8)
+    val lr = new LogisticRegression()
+      .setMaxIter(10)
+      .setRegParam(0.1)
+      .setElasticNetParam(0.5)
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setFamily("auto")
+      .setFamily("multinomial")
     val modelLR = lr.fit(trainingData)
     val predictionsLR = modelLR.transform(testData)
     eval.append(("LogisticRegression", modelLR, predictionsLR, (trainCount, testCount)))
+
+    computeConfusionMatrix(predictionsLR)
 
     //DECISION TREES CLASSIFIER
     val dt = new DecisionTreeClassifier()
       .setLabelCol("label")
       .setFeaturesCol("features")
+      .setImpurity("gini")
+      .setMaxDepth(5)
+      .setMinInstancesPerNode(10)
     val modelDT = dt.fit(trainingData)
     val predictionsDT = modelDT.transform(testData)
     eval.append(("DecisionTreeClassifier", modelDT, predictionsDT, (trainCount, testCount)))
+
+    computeConfusionMatrix(predictionsDT)
 
     //RANDOM FOREST CLASSIFIER
     val rf = new RandomForestClassifier()
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setNumTrees(10)
+      .setNumTrees(100)
+      .setMaxDepth(8)
+      .setFeatureSubsetStrategy("sqrt")
     val modelRF = rf.fit(trainingData)
     val predictionsRF = modelRF.transform(testData)
     eval.append(("RandomForestClassifier", modelRF, predictionsRF, (trainCount, testCount)))
 
-    computeConfusionMatrix(predictionsLR)
-    computeConfusionMatrix(predictionsDT)
     computeConfusionMatrix(predictionsRF)
 
     eval.toList
