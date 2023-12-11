@@ -6,7 +6,7 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
 import java.nio.file.StandardOpenOption
-import java.util.Date
+import java.time.LocalDateTime
 import scala.collection.mutable.ArrayBuffer
 
 abstract class AbstractClassificationTrainerActor extends AbstractTrainerActor {
@@ -23,7 +23,7 @@ abstract class AbstractClassificationTrainerActor extends AbstractTrainerActor {
     val evaluator = new MulticlassClassificationEvaluator().setLabelCol("label").setPredictionCol("prediction").setMetricName("accuracy")
     val accuracy = evaluator.evaluate(predictions)
 
-    val str = dateFormat.format(new Date()) + "," + algo + "," + (accuracy + "," + countTotal + "," + correct + "," + wrong + "," + ratioWrong + "," + ratioCorrect) + "," + rows._1 + "," + rows._2 + "\n"
+    val str = LocalDateTime.now().format(dateFormat) + "," + algo + "," + (accuracy + "," + countTotal + "," + correct + "," + wrong + "," + ratioWrong + "," + ratioCorrect) + "," + rows._1 + "," + rows._2 + "\n"
     writeFile(RT_OUTPUT_PATH + "classification-eval.csv", str, Some(StandardOpenOption.APPEND))
 
     accuracy

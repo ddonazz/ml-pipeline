@@ -6,7 +6,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.{SparkConf, SparkContext}
 
 import java.nio.file.{Files, Paths, StandardOpenOption}
-import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 
 object AbstractBaseActor {
   val HDFS_URL = "hdfs://localhost:9000/user/andrea/"
@@ -23,14 +23,16 @@ abstract class AbstractBaseActor extends Actor with ActorLogging {
   val HDFS_CS_PATH: String = HDFS_URL + "/diabetes/"
   val HDFS_CS_INPUT_PATH: String = HDFS_CS_PATH + "input/"
 
+  private val RT_PATH = "./rt/diabetes/"
+  private val DATE_FORMAT = "yyyy-MM-dd HH:mm:ss"
+
   val ML_MODEL_FILE = "./ml-model/diabetes/"
   val ML_MODEL_FILE_COPY = "./ml-model/diabetes_copy/"
   val RT_INPUT_PATH: String = RT_PATH + "input/"
   val RT_OUTPUT_PATH: String = RT_PATH + "output/"
   val RT_OUTPUT_FILE: String = RT_OUTPUT_PATH + "diabetes-prediction.csv"
-  val dateFormat = new SimpleDateFormat(DATE_FORMAT)
-  private val RT_PATH = "./rt/diabetes/"
-  private val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+  val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern(DATE_FORMAT)
+
   var spark: SparkSession = _
   var sc: SparkContext = _
   var conf: SparkConf = _

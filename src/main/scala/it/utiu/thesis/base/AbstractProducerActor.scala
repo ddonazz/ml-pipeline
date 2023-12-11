@@ -11,7 +11,6 @@ import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSeriali
 import java.nio.file.StandardWatchEventKinds._
 import java.nio.file.{FileSystems, Path, Paths}
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext
 
 object AbstractProducerActor {
   //start producing message
@@ -51,16 +50,15 @@ abstract class AbstractProducerActor(topic: String) extends AbstractBaseActor {
   private def elaborationFile(filePath: String): Unit = {
     Thread.sleep(500)
     log.info("Process file " + filePath)
+
     implicit val materializer: ActorMaterializer = ActorMaterializer()
-    implicit val executionContext: ExecutionContext = context.system.dispatcher
     val producerSettings = ProducerSettings(context.system, new ByteArraySerializer, new StringSerializer)
       .withBootstrapServers(AbstractBaseActor.KAFKA_BOOT_SVR)
 
     val file = scala.io.Source.fromFile(filePath)
     val source: Source[String, NotUsed] = Source(file.getLines().toIterable.to[collection.immutable.Iterable])
 
-    val done = source
-      .map(_.toString)
+    source
       .map { elem =>
         new ProducerRecord[Array[Byte], String](topic, elem)
       }

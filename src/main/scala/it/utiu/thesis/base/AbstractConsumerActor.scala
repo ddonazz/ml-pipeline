@@ -13,6 +13,7 @@ import org.apache.kafka.common.serialization.{ByteArrayDeserializer, StringDeser
 import java.io.PrintWriter
 import java.net.URI
 import java.nio.file.StandardOpenOption
+import java.time.LocalDateTime
 import java.util.Date
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -36,7 +37,7 @@ abstract class AbstractConsumerActor(topic: String, header: String) extends Abst
 
     case AbstractPredictorActor.TellPrediction(prediction, input) =>
       log.info("Received prediction: " + prediction)
-      val txtOut = dateFormat.format(new Date()) + "," + input + "," + prediction + "\n"
+      val txtOut = LocalDateTime.now().format(dateFormat) + "," + input + "," + prediction + "\n"
       writeFile(RT_OUTPUT_FILE, txtOut, Some(StandardOpenOption.APPEND))
 
   }
@@ -59,7 +60,7 @@ abstract class AbstractConsumerActor(topic: String, header: String) extends Abst
           if (!isPredictionReq || isAlwaysInput) {
             buffer.append(strMsg)
             if (buffer.size == BUFF_SIZE) {
-              log.info("Dump " + buffer.size + " input messages to HDFS")
+              log.info(s"Dump ${buffer.size} input messages to HDFS")
               try {
                 val path = new Path(HDFS_CS_INPUT_PATH + "diabetes.input." + new Date().getTime)
                 val conf = new Configuration()

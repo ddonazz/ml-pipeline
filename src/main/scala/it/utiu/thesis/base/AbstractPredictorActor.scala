@@ -35,8 +35,6 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
       log.info("Reloaded model " + mlModel + " just built")
   }
 
-  def doInternalPrediction(messages: String, spark: SparkSession, model: Transformer): String
-
   private def getInput(msg: String): String = msg
 
   private def doPrediction(msg: String): String = {
@@ -65,4 +63,6 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
       case _ => throw new IllegalArgumentException(s"Unsupported algorithm: $algo")
     }
   }
+
+  def doInternalPrediction(messages: String, spark: SparkSession, model: Transformer): String
 }
