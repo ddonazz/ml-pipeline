@@ -20,7 +20,7 @@ import scala.concurrent.Future
 import scala.util.Properties
 
 object AbstractConsumerActor {
-  val BUFF_SIZE = 21
+  val BUFF_SIZE = 5
 
   case class StartConsuming()
 }

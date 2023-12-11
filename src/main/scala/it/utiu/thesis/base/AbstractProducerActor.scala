@@ -1,15 +1,24 @@
 package it.utiu.thesis.base
 
-import java.nio.file.StandardWatchEventKinds._
+import akka.NotUsed
+import akka.kafka.ProducerSettings
+import akka.kafka.scaladsl.Producer
+import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Source
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
+
 import java.nio.file.{FileSystems, Path, Paths}
+import java.nio.file.StandardWatchEventKinds._
 import scala.collection.JavaConverters._
+import scala.concurrent.ExecutionContext
 
 object AbstractProducerActor {
   //start producing message
   case class StartProducing()
 }
 
-abstract class AbstractProducerActor extends AbstractBaseActor {
+abstract class AbstractProducerActor(topic: String) extends AbstractBaseActor {
 
   override def receive: Receive = {
     case AbstractProducerActor.StartProducing() => doProduce()
@@ -42,6 +51,19 @@ abstract class AbstractProducerActor extends AbstractBaseActor {
   private def elaborationFile(filePath: String): Unit = {
     Thread.sleep(500)
     log.info("Process file " + filePath)
-  }
+    implicit val materializer: ActorMaterializer = ActorMaterializer()
+    implicit val executionContext: ExecutionContext = context.system.dispatcher
+    val producerSettings = ProducerSettings(context.system, new ByteArraySerializer, new StringSerializer)
+      .withBootstrapServers(AbstractBaseActor.KAFKA_BOOT_SVR)
 
+    val file = scala.io.Source.fromFile(filePath)
+    val source: Source[String, NotUsed] = Source(file.getLines().toIterable.to[collection.immutable.Iterable])
+
+    val done = source
+      .map(_.toString)
+      .map { elem =>
+        new ProducerRecord[Array[Byte], String](topic, elem)
+      }
+      .runWith(Producer.plainSink(producerSettings))
+  }
 }
