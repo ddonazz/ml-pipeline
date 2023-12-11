@@ -8,8 +8,8 @@ import akka.stream.scaladsl.Source
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
 
-import java.nio.file.{FileSystems, Path, Paths}
 import java.nio.file.StandardWatchEventKinds._
+import java.nio.file.{FileSystems, Path, Paths}
 import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 

@@ -10,7 +10,7 @@ object DiabetesPredictorActor {
   def props(): Props = Props(new DiabetesPredictorActor())
 }
 
-class DiabetesPredictorActor() extends AbstractPredictorActor() {
+class DiabetesPredictorActor extends AbstractPredictorActor() {
 
   override def doInternalPrediction(messages: String, spark: SparkSession, model: Transformer): String = {
     val tokens = messages.split(",")

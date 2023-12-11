@@ -25,12 +25,12 @@ abstract class AbstractBaseActor extends Actor with ActorLogging {
 
   val ML_MODEL_FILE = "./ml-model/diabetes/"
   val ML_MODEL_FILE_COPY = "./ml-model/diabetes_copy/"
-  private val RT_PATH = "./rt/diabetes/"
   val RT_INPUT_PATH: String = RT_PATH + "input/"
   val RT_OUTPUT_PATH: String = RT_PATH + "output/"
   val RT_OUTPUT_FILE: String = RT_OUTPUT_PATH + "diabetes-prediction.csv"
-  private val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
   val dateFormat = new SimpleDateFormat(DATE_FORMAT)
+  private val RT_PATH = "./rt/diabetes/"
+  private val DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
   var spark: SparkSession = _
   var sc: SparkContext = _
   var conf: SparkConf = _
