@@ -1,4 +1,9 @@
 # Project exclude paths
 /target/
-/ml-model/
+
 /.idea/
+
+/ml-model/
+
+/rt/diabetes/input/*
+/rt/diabetes/output/*
