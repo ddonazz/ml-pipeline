@@ -48,9 +48,7 @@ abstract class AbstractTrainerActor extends AbstractBaseActor {
     writeFile(ML_MODEL_FILE + ".algo", fittest.getClass.getName, None)
     log.info("Saved ML Model into " + ML_MODEL_FILE + "...")
 
-    context.actorSelection {
-      "/user/predictor-diabetes"
-    } ! TrainingFinished(fittest)
+    context.actorSelection {"/user/predictor-diabetes"} ! TrainingFinished(fittest)
     self ! AbstractTrainerActor.TrainingFinished(fittest)
   }
 

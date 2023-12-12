@@ -19,10 +19,17 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
 
   override def doInternalTraining(spark: SparkSession): List[(String, Transformer, DataFrame, (Long, Long))] = {
 
-    val df1 = spark.read.format("csv").option("header", "false").option("inferSchema", "true").load(HDFS_CS_PATH + "*").toDF("_1", "_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21", "_22").withColumn("label", col("_1"))
+    val df1 = spark.read.format("csv")
+      .option("header", "false")
+      .option("inferSchema", "true")
+      .load(HDFS_CS_PATH + "*")
+      .toDF("_1", "_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21", "_22")
+      .withColumn("label", col("_1"))
     df1.show
 
-    val assembler = new VectorAssembler().setInputCols(Array("_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21", "_22")).setOutputCol("features")
+    val assembler = new VectorAssembler()
+      .setInputCols(Array("_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21", "_22"))
+      .setOutputCol("features")
     val df2 = assembler.transform(df1)
 
     val splitSeed = new Random().nextInt()
@@ -37,8 +44,8 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     //LOGISTIC REGRESSION CLASSIFIER
     val lr = new LogisticRegression()
       .setMaxIter(10)
-      .setRegParam(0.1)
-      .setElasticNetParam(0.5)
+      .setRegParam(0.7)
+      .setElasticNetParam(0.3)
       .setLabelCol("label")
       .setFeaturesCol("features")
       .setFamily("multinomial")
@@ -52,7 +59,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val dt = new DecisionTreeClassifier()
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setImpurity("gini")
+      .setImpurity("entropy")
       .setMaxDepth(5)
       .setMinInstancesPerNode(10)
     val modelDT = dt.fit(trainingData)
@@ -67,7 +74,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .setFeaturesCol("features")
       .setNumTrees(100)
       .setMaxDepth(8)
-      .setFeatureSubsetStrategy("sqrt")
+      .setFeatureSubsetStrategy("all")
     val modelRF = rf.fit(trainingData)
     val predictionsRF = modelRF.transform(testData)
     eval.append(("RandomForestClassifier", modelRF, predictionsRF, (trainCount, testCount)))
