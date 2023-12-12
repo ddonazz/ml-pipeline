@@ -56,7 +56,6 @@ abstract class AbstractConsumerActor(topic: String, header: String) extends Abst
           val strMsg = msg.value
           log.info(s"Received message value: $strMsg")
           val isPredictionReq = isPredictionRequest(strMsg)
-          log.info("Is prediction: " + isPredictionReq)
           if (!isPredictionReq || isAlwaysInput) {
             buffer.append(strMsg)
             if (buffer.size == BUFF_SIZE) {
