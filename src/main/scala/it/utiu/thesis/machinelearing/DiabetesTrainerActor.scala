@@ -42,22 +42,13 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     println("Training count:" + trainCount)
     println("Test count:" + testCount)
 
-    val classCounts = trainingData.groupBy("label").count().collect()
-    val totalSamples = trainCount.toDouble
-    val classWeights = classCounts.map { row =>
-      val label = row.getAs[Double]("label")
-      val count = row.getAs[Long]("count").toDouble
-      label -> (totalSamples / (classCounts.length * count))
-    }.toMap
-
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
 
     //LOGISTIC REGRESSION CLASSIFIER
-    val lr = new LogisticRegression().setRegParam(0.1).setElasticNetParam(0.2)
+    val lr = new LogisticRegression()
       .setLabelCol("label")
       .setFeaturesCol("features")
       .setFamily("multinomial")
-      .setWeightCol("weight")
 
     val modelLR = lr.fit(trainingData)
     val predictionsLR = modelLR.transform(testData)
