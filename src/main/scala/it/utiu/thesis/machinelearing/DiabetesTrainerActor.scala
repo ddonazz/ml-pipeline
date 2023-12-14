@@ -4,7 +4,9 @@ import akka.actor.Props
 import it.utiu.thesis.base.AbstractClassificationTrainerActor
 import org.apache.spark.ml.Transformer
 import org.apache.spark.ml.classification.{DecisionTreeClassifier, LogisticRegression, RandomForestClassifier}
+import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 import org.apache.spark.ml.feature.VectorAssembler
+import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -43,12 +45,24 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
 
     //LOGISTIC REGRESSION CLASSIFIER
     val lr = new LogisticRegression()
-      .setRegParam(0.2)
+      .setRegParam(0.25)
       .setElasticNetParam(0.6)
       .setLabelCol("label")
       .setFeaturesCol("features")
       .setFamily("binomial")
-    val modelLR = lr.fit(trainingData)
+
+    val paramGrid = new ParamGridBuilder()
+      .addGrid(lr.regParam, Array(0.25, 0.30, 0.35))
+      .addGrid(lr.elasticNetParam, Array(0.50, 0.55, 0.60, 0.65))
+      .build()
+
+    val crossVal = new CrossValidator()
+      .setEstimator(lr)
+      .setEvaluator(new BinaryClassificationEvaluator)
+      .setEstimatorParamMaps(paramGrid)
+      .setNumFolds(3)
+
+    val modelLR = crossVal.fit(trainingData)
     val predictionsLR = modelLR.transform(testData)
     eval.append(("LogisticRegression", modelLR, predictionsLR, (trainCount, testCount)))
 
@@ -58,7 +72,6 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val dt = new DecisionTreeClassifier()
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setImpurity("gini")
     val modelDT = dt.fit(trainingData)
     val predictionsDT = modelDT.transform(testData)
     eval.append(("DecisionTreeClassifier", modelDT, predictionsDT, (trainCount, testCount)))
@@ -69,7 +82,6 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val rf = new RandomForestClassifier()
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setSubsamplingRate(0.8)
     val modelRF = rf.fit(trainingData)
     val predictionsRF = modelRF.transform(testData)
     eval.append(("RandomForestClassifier", modelRF, predictionsRF, (trainCount, testCount)))
