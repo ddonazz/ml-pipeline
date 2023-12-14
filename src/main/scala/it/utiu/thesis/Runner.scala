@@ -40,7 +40,7 @@ class Runner(system: ActorSystem) {
     Thread.sleep(2000)
     producerRef ! AbstractProducerActor.StartProducing()
     Thread.sleep(2000)
-    system.scheduler.scheduleOnce(1 minute) {
+    system.scheduler.scheduleOnce(0 minute) {
       trainerRef ! AbstractTrainerActor.StartTraining()
     }
 
