@@ -55,7 +55,22 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .setFeaturesCol("features")
       .setFamily("binomial")
 
-    val modelLR = lr.fit(trainingData)
+    val paramGrid = new ParamGridBuilder()
+      .addGrid(lr.regParam, Array(0.01, 0.1, 1.0))
+      .addGrid(lr.elasticNetParam, Array(0.0, 0.5, 1.0))
+      .build()
+
+    val evaluator = new BinaryClassificationEvaluator()
+      .setLabelCol("label")
+      .setRawPredictionCol("prediction")
+
+    val cv = new CrossValidator()
+      .setEstimator(lr)
+      .setEvaluator(evaluator)
+      .setEstimatorParamMaps(paramGrid)
+      .setNumFolds(5)
+
+    val modelLR = cv.fit(trainingData)
     val predictionsLR = modelLR.transform(testData)
     eval.append(("LogisticRegression", modelLR, predictionsLR, (trainCount, testCount)))
 
