@@ -41,7 +41,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     println("Training count:" + trainCount)
     println("Test count:" + testCount)
 
-    val countByClass = df1.groupBy("label").count()
+    val countByClass = df2.groupBy("label").count()
     countByClass.withColumn("weight", lit(1.0) / col("count"))
 
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
