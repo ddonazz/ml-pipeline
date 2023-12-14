@@ -44,6 +44,8 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val countByClass = df2.groupBy("label").count()
     countByClass.withColumn("weight", lit(1.0) / col("count"))
 
+    df2.show()
+
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
 
     //LOGISTIC REGRESSION CLASSIFIER
