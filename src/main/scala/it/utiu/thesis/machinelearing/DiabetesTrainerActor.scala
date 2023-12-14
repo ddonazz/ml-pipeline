@@ -35,7 +35,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     var df2 = assembler.transform(df1)
 
     val splitSeed = new Random().nextInt()
-    val Array(trainingData, testData) = df2.randomSplit(Array(0.75, 0.25), splitSeed)
+    val Array(trainingData, testData) = df2.randomSplit(Array(0.9, 0.1), splitSeed)
     val trainCount = trainingData.count()
     val testCount = testData.count()
     println("Training count:" + trainCount)
