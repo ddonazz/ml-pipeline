@@ -36,7 +36,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val df2 = assembler.transform(df1)
 
     val splitSeed = new Random().nextInt()
-    val Array(trainingData, testData) = df2.randomSplit(Array(0.5, 0.5), splitSeed)
+    val Array(trainingData, testData) = df2.randomSplit(Array(0.7, 0.3), splitSeed)
     val trainCount = trainingData.count()
     val testCount = testData.count()
     println("Training count:" + trainCount)
@@ -48,7 +48,6 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val lr = new LogisticRegression()
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setFamily("multinomial")
 
     val modelLR = lr.fit(trainingData)
     val predictionsLR = modelLR.transform(testData)
