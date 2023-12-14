@@ -20,7 +20,10 @@ abstract class AbstractClassificationTrainerActor extends AbstractTrainerActor {
     val ratioWrong = wrong.toDouble / countTotal.toDouble
     val ratioCorrect = correct.toDouble / countTotal.toDouble
 
-    val evaluator = new MulticlassClassificationEvaluator().setLabelCol("label").setPredictionCol("prediction").setMetricName("accuracy")
+    val evaluator = new MulticlassClassificationEvaluator()
+      .setLabelCol("label")
+      .setPredictionCol("prediction")
+      .setMetricName("accuracy")
     val accuracy = evaluator.evaluate(predictions)
 
     val str = LocalDateTime.now().format(dateFormat) + "," + algo + "," + (accuracy + "," + countTotal + "," + correct + "," + wrong + "," + ratioWrong + "," + ratioCorrect) + "," + rows._1 + "," + rows._2 + "\n"
