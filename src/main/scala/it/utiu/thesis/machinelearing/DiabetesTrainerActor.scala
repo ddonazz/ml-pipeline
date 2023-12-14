@@ -7,6 +7,7 @@ import org.apache.spark.ml.classification.{DecisionTreeClassifier, LogisticRegre
 import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
+import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -41,15 +42,15 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     println("Training count:" + trainCount)
     println("Test count:" + testCount)
 
-    val classFrequencies = trainingData.groupBy("label").count()
-    val weights = classFrequencies.withColumn("weight", lit(trainCount) / col("count") * lit(100) )
-    weights.show()
-
-    val weightedData = trainingData.join(weights, "label")
+    val classCounts = trainingData.groupBy("label").count().collect()
+    val totalSamples = trainCount.toDouble
+    val classWeights = classCounts.map { row =>
+      val label = row.getAs[Double]("label")
+      val count = row.getAs[Long]("count").toDouble
+      label -> (totalSamples / (classCounts.length * count))
+    }.toMap
 
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
-
-    weightedData.show(false)
 
     //LOGISTIC REGRESSION CLASSIFIER
     val lr = new LogisticRegression().setRegParam(0.1).setElasticNetParam(0.2)
@@ -58,7 +59,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .setFamily("multinomial")
       .setWeightCol("weight")
 
-    val modelLR = lr.fit(weightedData)
+    val modelLR = lr.fit(trainingData)
     val predictionsLR = modelLR.transform(testData)
     eval.append(("LogisticRegression", modelLR, predictionsLR, (trainCount, testCount)))
 
@@ -69,7 +70,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .setLabelCol("label")
       .setFeaturesCol("features")
 
-    val modelDT = dt.fit(weightedData)
+    val modelDT = dt.fit(trainingData)
     val predictionsDT = modelDT.transform(testData)
     eval.append(("DecisionTreeClassifier", modelDT, predictionsDT, (trainCount, testCount)))
 
@@ -80,7 +81,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .setLabelCol("label")
       .setFeaturesCol("features")
 
-    val modelRF = rf.fit(weightedData)
+    val modelRF = rf.fit(trainingData)
     val predictionsRF = modelRF.transform(testData)
     eval.append(("RandomForestClassifier", modelRF, predictionsRF, (trainCount, testCount)))
 
