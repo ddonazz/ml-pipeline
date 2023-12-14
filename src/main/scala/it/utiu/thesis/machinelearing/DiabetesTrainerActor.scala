@@ -42,7 +42,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     println("Test count:" + testCount)
 
     val classFrequencies = trainingData.groupBy("label").count()
-    val weights = classFrequencies.withColumn("weight", lit(10.0) / col("count"))
+    val weights = classFrequencies.withColumn("weight", lit(1.0) / col("count"))
     weights.show()
 
     val weightedData = trainingData.join(weights, "label")
