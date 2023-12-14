@@ -49,7 +49,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .select("label")
       .groupBy("label")
       .count()
-      .withColumn("classWeight", lit(1.0) / col("count"))
+      .withColumn("classWeight", lit(10.0) / col("count"))
 
     val weightedData = trainingData.join(classWeights, "label")
 
