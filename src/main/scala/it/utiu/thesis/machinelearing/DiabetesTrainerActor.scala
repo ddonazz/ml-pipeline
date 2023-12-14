@@ -32,7 +32,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val assembler = new VectorAssembler()
       .setInputCols(Array("_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21", "_22"))
       .setOutputCol("features")
-    var df2 = assembler.transform(df1)
+    val df2 = assembler.transform(df1)
 
     val splitSeed = new Random().nextInt()
     val Array(trainingData, testData) = df2.randomSplit(Array(0.9, 0.1), splitSeed)
@@ -42,16 +42,10 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     println("Test count:" + testCount)
 
     val classFrequencies = trainingData.groupBy("label").count()
-    val weights = classFrequencies.withColumn("weight", lit(1.0) / col("count"))
+    val weights = classFrequencies.withColumn("weight", lit(10.0) / col("count"))
     weights.show()
 
-    val classWeights = trainingData
-      .select("label")
-      .groupBy("label")
-      .count()
-      .withColumn("classWeight", lit(10.0) / col("count"))
-
-    val weightedData = trainingData.join(classWeights, "label")
+    val weightedData = trainingData.join(weights, "label")
 
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
 
@@ -62,7 +56,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .setLabelCol("label")
       .setFeaturesCol("features")
       .setFamily("multinomial")
-      .setWeightCol("classWeight")
+      .setWeightCol("weight")
 
     val modelLR = lr.fit(weightedData)
     val predictionsLR = modelLR.transform(testData)
