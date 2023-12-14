@@ -65,6 +65,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val dt = new DecisionTreeClassifier()
       .setLabelCol("label")
       .setFeaturesCol("features")
+      .setImpurity("entropy")
 
     val modelDT = dt.fit(trainingData)
     val predictionsDT = modelDT.transform(testData)
