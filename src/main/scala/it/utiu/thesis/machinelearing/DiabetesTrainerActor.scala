@@ -43,6 +43,9 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
 
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
 
+    val classFrequencies = trainingData.groupBy("label").count()
+    val weights = classFrequencies.withColumn("weight", lit(1.0) / col("count"))
+
     //LOGISTIC REGRESSION CLASSIFIER
     val lr = new LogisticRegression()
       .setRegParam(0.01)
@@ -50,6 +53,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .setLabelCol("label")
       .setFeaturesCol("features")
       .setFamily("binomial")
+      .setWeightCol("weight")
 
     val modelLR = lr.fit(trainingData)
     val predictionsLR = modelLR.transform(testData)
