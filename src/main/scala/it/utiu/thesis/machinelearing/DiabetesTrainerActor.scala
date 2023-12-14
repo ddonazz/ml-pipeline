@@ -46,7 +46,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     //LOGISTIC REGRESSION CLASSIFIER
     val lr = new LogisticRegression()
       .setRegParam(0.01)
-      .setElasticNetParam(0.5)
+      .setElasticNetParam(0.8)
       .setLabelCol("label")
       .setFeaturesCol("features")
       .setFamily("binomial")
