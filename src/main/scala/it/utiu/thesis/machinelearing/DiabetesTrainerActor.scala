@@ -45,18 +45,27 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val weights = classFrequencies.withColumn("weight", lit(1.0) / col("count"))
     weights.show()
 
+    val classWeights = trainingData
+      .select("label")
+      .groupBy("label")
+      .count()
+      .withColumn("classWeights", lit(1.0) / col("count"))
+
+    val weightedData = trainingData.join(classWeights, "label")
+
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
 
     //LOGISTIC REGRESSION CLASSIFIER
     val lr = new LogisticRegression()
-      .setRegParam(0.01)
-      .setElasticNetParam(0.85)
+      .setRegParam(0.2)
+      .setElasticNetParam(0.7)
       .setLabelCol("label")
       .setFeaturesCol("features")
       .setFamily("multinomial")
-      .setMaxIter(3)
+      .setMaxIter(5)
+      .setWeightCol("classWeights")
 
-    val modelLR = lr.fit(trainingData)
+    val modelLR = lr.fit(weightedData)
     val predictionsLR = modelLR.transform(testData)
     eval.append(("LogisticRegression", modelLR, predictionsLR, (trainCount, testCount)))
 
@@ -66,8 +75,6 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val dt = new DecisionTreeClassifier()
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setMaxDepth(5)
-      .setMinInfoGain(0.001)
 
     val modelDT = dt.fit(trainingData)
     val predictionsDT = modelDT.transform(testData)
@@ -79,7 +86,6 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val rf = new RandomForestClassifier()
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setMaxDepth(5)
 
     val modelRF = rf.fit(trainingData)
     val predictionsRF = modelRF.transform(testData)
