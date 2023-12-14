@@ -45,24 +45,13 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
 
     //LOGISTIC REGRESSION CLASSIFIER
     val lr = new LogisticRegression()
-      //.setRegParam(0.25)
-      //.setElasticNetParam(0.6)
+      .setRegParam(0.1)
+      .setElasticNetParam(0.65)
       .setLabelCol("label")
       .setFeaturesCol("features")
       .setFamily("binomial")
 
-    val paramGrid = new ParamGridBuilder()
-      .addGrid(lr.regParam, Array(0.25, 0.30, 0.35, 0.40))
-      .addGrid(lr.elasticNetParam, Array(0.40, 0.45, 0.50, 0.55, 0.60, 0.65))
-      .build()
-
-    val crossVal = new CrossValidator()
-      .setEstimator(lr)
-      .setEvaluator(new BinaryClassificationEvaluator)
-      .setEstimatorParamMaps(paramGrid)
-      .setNumFolds(3)
-
-    val modelLR = crossVal.fit(trainingData)
+    val modelLR = lr.fit(trainingData)
     val predictionsLR = modelLR.transform(testData)
     eval.append(("LogisticRegression", modelLR, predictionsLR, (trainCount, testCount)))
 
@@ -82,7 +71,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val rf = new RandomForestClassifier()
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setNumTrees(100)
+      .setNumTrees(1000)
     val modelRF = rf.fit(trainingData)
     val predictionsRF = modelRF.transform(testData)
     eval.append(("RandomForestClassifier", modelRF, predictionsRF, (trainCount, testCount)))
