@@ -43,7 +43,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
 
     //LOGISTIC REGRESSION CLASSIFIER
-    val lr = new LogisticRegression().setRegParam(0.001).setElasticNetParam(0.3).setFamily("binomial")
+    val lr = new LogisticRegression().setMaxIter(1000).setRegParam(0.01).setElasticNetParam(0.1).setFamily("binomial")
       .setLabelCol("label")
       .setFeaturesCol("features")
 
@@ -65,7 +65,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     computeConfusionMatrix(predictionsDT)
 
     //RANDOM FOREST CLASSIFIER
-    val rf = new RandomForestClassifier().setNumTrees(100)
+    val rf = new RandomForestClassifier().setNumTrees(500)
       .setLabelCol("label")
       .setFeaturesCol("features")
 
@@ -76,7 +76,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     computeConfusionMatrix(predictionsRF)
 
     //GBT TREE CLASSIFIER
-    val gbt = new GBTClassifier()
+    val gbt = new GBTClassifier().setMaxIter(100)
       .setLabelCol("label")
       .setFeaturesCol("features")
 
@@ -87,7 +87,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     computeConfusionMatrix(predictionsGBT)
 
     //LINEAR SVC
-    val svc = new LinearSVC()
+    val svc = new LinearSVC().setStandardization(false)
       .setLabelCol("label")
       .setFeaturesCol("features")
 
