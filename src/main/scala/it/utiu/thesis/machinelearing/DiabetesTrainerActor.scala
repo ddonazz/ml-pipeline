@@ -65,10 +65,9 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     computeConfusionMatrix(predictionsDT)
 
     //RANDOM FOREST CLASSIFIER
-    val rf = new RandomForestClassifier()
+    val rf = new RandomForestClassifier().setNumTrees(10)
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setNumTrees(10)
 
     val modelRF = rf.fit(trainingData)
     val predictionsRF = modelRF.transform(testData)
@@ -77,10 +76,9 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     computeConfusionMatrix(predictionsRF)
 
     //GBT TREE CLASSIFIER
-    val gbt = new GBTClassifier()
+    val gbt = new GBTClassifier().setMaxIter(10)
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setMaxIter(10)
 
     val modelGBT = gbt.fit(trainingData)
     val predictionsGBT = modelGBT.transform(testData)
@@ -104,7 +102,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .setLabelCol("label")
       .setFeaturesCol("features")
 
-    val modelNB = svc.fit(trainingData)
+    val modelNB = nb.fit(trainingData)
     val predictionsNB = modelNB.transform(testData)
     eval.append(("NaiveBayes", modelNB, predictionsNB, (trainCount, testCount)))
 
