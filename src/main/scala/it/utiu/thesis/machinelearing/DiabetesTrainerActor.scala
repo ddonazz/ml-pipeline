@@ -43,7 +43,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
 
     //LOGISTIC REGRESSION CLASSIFIER
-    val lr = new LogisticRegression().setMaxIter(10).setRegParam(0.2).setElasticNetParam(0.6)
+    val lr = new LogisticRegression().setMaxIter(10).setRegParam(0.2).setElasticNetParam(0.6).setFamily("binomial")
       .setLabelCol("label")
       .setFeaturesCol("features")
 
