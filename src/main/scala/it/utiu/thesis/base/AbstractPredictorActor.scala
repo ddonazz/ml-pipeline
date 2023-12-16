@@ -3,7 +3,7 @@ package it.utiu.thesis.base
 import it.utiu.thesis.base.AbstractPredictorActor.{AskPrediction, TellPrediction}
 import org.apache.commons.io.FileUtils
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.classification.{DecisionTreeClassificationModel, GBTClassificationModel, LogisticRegressionModel, RandomForestClassificationModel}
+import org.apache.spark.ml.classification.{DecisionTreeClassificationModel, GBTClassificationModel, LinearSVCModel, LogisticRegressionModel, NaiveBayesModel, RandomForestClassificationModel}
 import org.apache.spark.sql.SparkSession
 
 import java.io.File
@@ -18,22 +18,11 @@ object AbstractPredictorActor {
 
 abstract class AbstractPredictorActor extends AbstractBaseActor {
 
-  private var mlModel: Transformer = _
+  val mlModel: Transformer
 
   initSpark("predictor", SPARK_URL_PREDICTION)
 
-  override def receive: Receive = {
-
-    case AskPrediction(messages: String)
-    =>
-      val prediction = doPrediction(messages)
-      if (prediction != null) sender ! TellPrediction(prediction, getInput(messages))
-
-    case AbstractTrainerActor.TrainingFinished(model: Transformer)
-    =>
-      mlModel = model
-      log.info("Reloaded model " + mlModel + " just built")
-  }
+  override def receive: Receive = onMessage(mlModel)
 
   private def getInput(msg: String): String = msg
 
@@ -42,7 +31,7 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
 
     if (mlModel == null) {
       if (!Files.exists(Paths.get(ML_MODEL_FILE))) return null
-      mlModel = loadModelFromDisk()
+      context.become(onMessage(loadModelFromDisk()))
     }
 
     val prediction = doInternalPrediction(msg, spark, mlModel)
@@ -62,6 +51,8 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
         case "org.apache.spark.ml.classification.DecisionTreeClassificationModel" => DecisionTreeClassificationModel.read.load(ML_MODEL_FILE_COPY)
         case "org.apache.spark.ml.classification.RandomForestClassificationModel" => RandomForestClassificationModel.read.load(ML_MODEL_FILE_COPY)
         case "org.apache.spark.ml.classification.GBTClassificationModel" => GBTClassificationModel.read.load(ML_MODEL_FILE_COPY)
+        case "org.apache.spark.ml.classification.NaiveBayesModel" => NaiveBayesModel.read.load(ML_MODEL_FILE_COPY)
+        case "org.apache.spark.ml.classification.LinearSVCModel" => LinearSVCModel.read.load(ML_MODEL_FILE_COPY)
 
         case _ => throw new IllegalArgumentException(s"Unsupported algorithm: $algo")
       }
@@ -71,4 +62,17 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
   }
 
   def doInternalPrediction(messages: String, spark: SparkSession, model: Transformer): String
+
+  private def onMessage(mlModel: Transformer): Receive = {
+
+    case AskPrediction(messages: String)
+    =>
+      val prediction = doPrediction(messages)
+      if (prediction != null) sender ! TellPrediction(prediction, getInput(messages))
+
+    case AbstractTrainerActor.TrainingFinished(model: Transformer)
+    =>
+      context.become(onMessage(model))
+      log.info("Reloaded model " + mlModel + " just built")
+  }
 }

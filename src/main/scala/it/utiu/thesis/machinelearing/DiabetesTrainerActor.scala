@@ -3,7 +3,7 @@ package it.utiu.thesis.machinelearing
 import akka.actor.Props
 import it.utiu.thesis.base.AbstractClassificationTrainerActor
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.classification.{DecisionTreeClassifier, GBTClassifier, LogisticRegression, RandomForestClassifier}
+import org.apache.spark.ml.classification.{DecisionTreeClassifier, GBTClassifier, LinearSVC, LogisticRegression, NaiveBayes, RandomForestClassifier}
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -43,7 +43,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
 
     //LOGISTIC REGRESSION CLASSIFIER
-    val lr = new LogisticRegression().setMaxIter(10).setRegParam(0.3).setElasticNetParam(0.8)
+    val lr = new LogisticRegression().setMaxIter(10).setRegParam(0.2).setElasticNetParam(0.6)
       .setLabelCol("label")
       .setFeaturesCol("features")
 
@@ -85,9 +85,31 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
 
     val modelGBT = gbt.fit(trainingData)
     val predictionsGBT = modelGBT.transform(testData)
-    eval.append(("GradientBoostedTreeClassifier", modelGBT, predictionsGBT, (trainCount, testCount)))
+    eval.append(("GBTClassifier", modelGBT, predictionsGBT, (trainCount, testCount)))
 
     computeConfusionMatrix(predictionsGBT)
+
+    //LINEAR SVC
+    val svc = new LinearSVC()
+      .setLabelCol("label")
+      .setFeaturesCol("features")
+
+    val modelSVC = svc.fit(trainingData)
+    val predictionsSVC = modelSVC.transform(testData)
+    eval.append(("LinearSVC", modelSVC, predictionsSVC, (trainCount, testCount)))
+
+    computeConfusionMatrix(predictionsSVC)
+
+    //NAIVE BAYES
+    val nb = new NaiveBayes()
+      .setLabelCol("label")
+      .setFeaturesCol("features")
+
+    val modelNB = svc.fit(trainingData)
+    val predictionsNB = modelNB.transform(testData)
+    eval.append(("NaiveBayes", modelNB, predictionsNB, (trainCount, testCount)))
+
+    computeConfusionMatrix(predictionsNB)
 
     eval.toList
   }
