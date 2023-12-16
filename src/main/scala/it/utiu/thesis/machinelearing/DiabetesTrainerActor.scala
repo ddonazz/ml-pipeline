@@ -81,7 +81,6 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .setLabelCol("label")
       .setFeaturesCol("features")
       .setMaxIter(10)
-      .setFeatureSubsetStrategy("auto")
 
     val modelGBT = gbt.fit(trainingData)
     val predictionsGBT = modelGBT.transform(testData)

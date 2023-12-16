@@ -18,11 +18,19 @@ object AbstractPredictorActor {
 
 abstract class AbstractPredictorActor extends AbstractBaseActor {
 
-  val mlModel: Transformer
+  private var mlModel: Transformer = _
 
   initSpark("predictor", SPARK_URL_PREDICTION)
 
-  override def receive: Receive = onMessage(mlModel)
+  override def receive: Receive = {
+    case AskPrediction(messages: String) =>
+      val prediction = doPrediction(messages)
+      if (prediction != null) sender ! TellPrediction(prediction, getInput(messages))
+
+    case AbstractTrainerActor.TrainingFinished(model: Transformer) =>
+      mlModel = model
+      log.info("Reloaded model " + mlModel + " just built")
+  }
 
   private def getInput(msg: String): String = msg
 
@@ -31,7 +39,7 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
 
     if (mlModel == null) {
       if (!Files.exists(Paths.get(ML_MODEL_FILE))) return null
-      context.become(onMessage(loadModelFromDisk()))
+      mlModel = loadModelFromDisk()
     }
 
     val prediction = doInternalPrediction(msg, spark, mlModel)
@@ -62,17 +70,4 @@ abstract class AbstractPredictorActor extends AbstractBaseActor {
   }
 
   def doInternalPrediction(messages: String, spark: SparkSession, model: Transformer): String
-
-  private def onMessage(mlModel: Transformer): Receive = {
-
-    case AskPrediction(messages: String)
-    =>
-      val prediction = doPrediction(messages)
-      if (prediction != null) sender ! TellPrediction(prediction, getInput(messages))
-
-    case AbstractTrainerActor.TrainingFinished(model: Transformer)
-    =>
-      context.become(onMessage(model))
-      log.info("Reloaded model " + mlModel + " just built")
-  }
 }
