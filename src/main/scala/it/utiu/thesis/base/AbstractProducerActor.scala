@@ -51,7 +51,7 @@ abstract class AbstractProducerActor(topic: String) extends AbstractBaseActor {
     Thread.sleep(500)
     log.info("Process file " + filePath)
 
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
+    implicit val actorMaterialize: ActorMaterializer = ActorMaterializer()
     val producerSettings = ProducerSettings(context.system, new ByteArraySerializer, new StringSerializer)
       .withBootstrapServers(AbstractBaseActor.KAFKA_BOOT_SVR)
 

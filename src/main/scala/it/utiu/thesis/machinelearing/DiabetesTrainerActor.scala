@@ -3,11 +3,8 @@ package it.utiu.thesis.machinelearing
 import akka.actor.Props
 import it.utiu.thesis.base.AbstractClassificationTrainerActor
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.classification.{DecisionTreeClassifier, LogisticRegression, RandomForestClassifier}
-import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator
+import org.apache.spark.ml.classification.{DecisionTreeClassifier, GBTClassifier, LogisticRegression, RandomForestClassifier}
 import org.apache.spark.ml.feature.VectorAssembler
-import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
-import org.apache.spark.mllib.util.MLUtils
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
@@ -28,6 +25,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .load(HDFS_CS_PATH + "*")
       .toDF("_1", "_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21", "_22")
       .withColumn("label", col("_1"))
+
     df1.show
 
     val assembler = new VectorAssembler()
@@ -36,7 +34,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val df2 = assembler.transform(df1)
 
     val splitSeed = new Random().nextInt()
-    val Array(trainingData, testData) = df2.randomSplit(Array(0.9, 0.1), splitSeed)
+    val Array(trainingData, testData) = df2.randomSplit(Array(0.7, 0.3), splitSeed)
     val trainCount = trainingData.count()
     val testCount = testData.count()
     println("Training count:" + trainCount)
@@ -45,7 +43,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
 
     //LOGISTIC REGRESSION CLASSIFIER
-    val lr = new LogisticRegression()
+    val lr = new LogisticRegression().setMaxIter(10).setRegParam(0.3).setElasticNetParam(0.8)
       .setLabelCol("label")
       .setFeaturesCol("features")
 
@@ -70,12 +68,26 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val rf = new RandomForestClassifier()
       .setLabelCol("label")
       .setFeaturesCol("features")
+      .setNumTrees(10)
 
     val modelRF = rf.fit(trainingData)
     val predictionsRF = modelRF.transform(testData)
     eval.append(("RandomForestClassifier", modelRF, predictionsRF, (trainCount, testCount)))
 
     computeConfusionMatrix(predictionsRF)
+
+    //GBT TREE CLASSIFIER
+    val gbt = new GBTClassifier()
+      .setLabelCol("label")
+      .setFeaturesCol("features")
+      .setMaxIter(10)
+      .setFeatureSubsetStrategy("auto")
+
+    val modelGBT = gbt.fit(trainingData)
+    val predictionsGBT = modelGBT.transform(testData)
+    eval.append(("GradientBoostedTreeClassifier", modelGBT, predictionsGBT, (trainCount, testCount)))
+
+    computeConfusionMatrix(predictionsGBT)
 
     eval.toList
   }
