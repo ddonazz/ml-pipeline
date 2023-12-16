@@ -43,7 +43,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
 
     //LOGISTIC REGRESSION CLASSIFIER
-    val lr = new LogisticRegression().setMaxIter(10).setRegParam(0.2).setElasticNetParam(0.6).setFamily("binomial")
+    val lr = new LogisticRegression().setRegParam(0.001).setElasticNetParam(0.3).setFamily("binomial")
       .setLabelCol("label")
       .setFeaturesCol("features")
 
@@ -65,7 +65,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     computeConfusionMatrix(predictionsDT)
 
     //RANDOM FOREST CLASSIFIER
-    val rf = new RandomForestClassifier().setNumTrees(10)
+    val rf = new RandomForestClassifier().setNumTrees(100)
       .setLabelCol("label")
       .setFeaturesCol("features")
 
@@ -76,7 +76,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     computeConfusionMatrix(predictionsRF)
 
     //GBT TREE CLASSIFIER
-    val gbt = new GBTClassifier().setMaxIter(10)
+    val gbt = new GBTClassifier()
       .setLabelCol("label")
       .setFeaturesCol("features")
 
@@ -96,17 +96,6 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     eval.append(("LinearSVC", modelSVC, predictionsSVC, (trainCount, testCount)))
 
     computeConfusionMatrix(predictionsSVC)
-
-    //NAIVE BAYES
-    val nb = new NaiveBayes()
-      .setLabelCol("label")
-      .setFeaturesCol("features")
-
-    val modelNB = nb.fit(trainingData)
-    val predictionsNB = modelNB.transform(testData)
-    eval.append(("NaiveBayes", modelNB, predictionsNB, (trainCount, testCount)))
-
-    computeConfusionMatrix(predictionsNB)
 
     eval.toList
   }
