@@ -3,7 +3,7 @@ package it.utiu.thesis.machinelearing
 import akka.actor.Props
 import it.utiu.thesis.base.AbstractClassificationTrainerActor
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.classification.{DecisionTreeClassifier, GBTClassifier, LinearSVC, LogisticRegression, NaiveBayes, RandomForestClassifier}
+import org.apache.spark.ml.classification.{DecisionTreeClassifier, GBTClassifier, LinearSVC, LogisticRegression, RandomForestClassifier}
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -29,7 +29,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     df1.show
 
     val assembler = new VectorAssembler()
-      .setInputCols(Array("_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21", "_22"))
+      .setInputCols(Array("_2", "_3", "_5", "_6", "_8", "_9", "_10", "_15", "_18", "_19", "_20", "_21", "_22"))
       .setOutputCol("features")
     val df2 = assembler.transform(df1)
 
