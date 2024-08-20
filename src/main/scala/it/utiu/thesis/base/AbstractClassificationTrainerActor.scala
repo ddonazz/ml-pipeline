@@ -33,17 +33,11 @@ abstract class AbstractClassificationTrainerActor extends AbstractTrainerActor {
   }
 
   protected def computeConfusionMatrix(test: DataFrame): Unit = {
-    val locTest = test.collect()
-    val buff = ArrayBuffer[(Double, Double)]()
-    for (r <- locTest) {
-      buff.append((r.getAs[Double]("prediction"), r.getAs[Double]("label")))
-    }
-    val predictionAndLabels = sc.parallelize(buff)
+  val predictionAndLabels = test.rdd.map(row => (row.getAs[Double]("prediction"), row.getAs[Double]("label")))
 
-    val metrics = new MulticlassMetrics(predictionAndLabels)
+  val metrics = new MulticlassMetrics(predictionAndLabels)
 
-    println("Confusion matrix:")
-    println(metrics.confusionMatrix)
+  println("Confusion matrix:")
+  println(metrics.confusionMatrix)
   }
-
 }

@@ -7,6 +7,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.Source
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.{ByteArraySerializer, StringSerializer}
+import scala.util.{Try, Success, Failure}
 
 import java.nio.file.StandardWatchEventKinds._
 import java.nio.file.{FileSystems, Path, Paths}
@@ -55,9 +56,15 @@ abstract class AbstractProducerActor(topic: String) extends AbstractBaseActor {
     val producerSettings = ProducerSettings(context.system, new ByteArraySerializer, new StringSerializer)
       .withBootstrapServers(AbstractBaseActor.KAFKA_BOOT_SVR)
 
-    val file = scala.io.Source.fromFile(filePath)
-    val source: Source[String, NotUsed] = Source(file.getLines().toIterable.to[collection.immutable.Iterable])
-
+  val source: Source[String, NotUsed] = Try {
+      val file = scala.io.Source.fromFile(filePath)
+      Source.fromIterator(() => file.getLines())
+    } match {
+      case Success(src) => src
+      case Failure(ex) =>
+        log.error("Error reading file", ex)
+        return
+    }
     source
       .map { elem =>
         new ProducerRecord[Array[Byte], String](topic, elem)
