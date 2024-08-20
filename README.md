@@ -21,8 +21,8 @@ Ensure you have the following prerequisites before installing the software:
 To install the software, run:
 
 ```bash
-git clone https://github.com/username/repository.git
-cd repository
+git clone https://github.com/ddonazz/ml-pipeline.git
+cd ml-pipeline
 # Commands to install dependencies
 ```
 
@@ -39,9 +39,9 @@ To run the software, use the following commands:
 Contributions are welcome! If you would like to contribute, please fork the repository and submit a pull request with your improvements.
 
 1. Fork the project
-2. Create a feature branch (`git checkout -b feature/NewFeature`)
+2. Create a feature branch (`git checkout -b feature/new_feature`)
 3. Commit your changes (`git commit -am 'Add new feature'`)
-4. Push the branch (`git push origin feature/NewFeature`)
+4. Push the branch (`git push origin feature/new_feature`)
 5. Submit a Pull Request
 
 ## License
