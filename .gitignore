@@ -2,6 +2,9 @@
 /target/
 
 /.idea/
+/.bloop/
+/.metals/
+/.vscode/
 
 /ml-model/
 
