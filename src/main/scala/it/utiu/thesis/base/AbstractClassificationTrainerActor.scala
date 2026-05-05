@@ -20,7 +20,10 @@ abstract class AbstractClassificationTrainerActor extends AbstractTrainerActor {
     val ratioWrong = wrong.toDouble / countTotal.toDouble
     val ratioCorrect = correct.toDouble / countTotal.toDouble
 
-    val evaluator = new MulticlassClassificationEvaluator().setLabelCol("label").setPredictionCol("prediction").setMetricName("accuracy")
+    val evaluator = new MulticlassClassificationEvaluator()
+      .setLabelCol("label")
+      .setPredictionCol("prediction")
+      .setMetricName("accuracy")
     val accuracy = evaluator.evaluate(predictions)
 
     val str = LocalDateTime.now().format(dateFormat) + "," + algo + "," + (accuracy + "," + countTotal + "," + correct + "," + wrong + "," + ratioWrong + "," + ratioCorrect) + "," + rows._1 + "," + rows._2 + "\n"
@@ -30,17 +33,11 @@ abstract class AbstractClassificationTrainerActor extends AbstractTrainerActor {
   }
 
   protected def computeConfusionMatrix(test: DataFrame): Unit = {
-    val locTest = test.collect()
-    val buff = ArrayBuffer[(Double, Double)]()
-    for (r <- locTest) {
-      buff.append((r.getAs[Double]("prediction"), r.getAs[Double]("label")))
-    }
-    val predictionAndLabels = sc.parallelize(buff)
+  val predictionAndLabels = test.rdd.map(row => (row.getAs[Double]("prediction"), row.getAs[Double]("label")))
 
-    val metrics = new MulticlassMetrics(predictionAndLabels)
+  val metrics = new MulticlassMetrics(predictionAndLabels)
 
-    println("Confusion matrix:")
-    println(metrics.confusionMatrix)
+  println("Confusion matrix:")
+  println(metrics.confusionMatrix)
   }
-
 }

@@ -3,7 +3,7 @@ package it.utiu.thesis.machinelearing
 import akka.actor.Props
 import it.utiu.thesis.base.AbstractClassificationTrainerActor
 import org.apache.spark.ml.Transformer
-import org.apache.spark.ml.classification.{DecisionTreeClassifier, LogisticRegression, RandomForestClassifier}
+import org.apache.spark.ml.classification.{DecisionTreeClassifier, GBTClassifier, LinearSVC, LogisticRegression, NaiveBayes, RandomForestClassifier}
 import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -25,6 +25,7 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
       .load(HDFS_CS_PATH + "*")
       .toDF("_1", "_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15", "_16", "_17", "_18", "_19", "_20", "_21", "_22")
       .withColumn("label", col("_1"))
+
     df1.show
 
     val assembler = new VectorAssembler()
@@ -42,12 +43,10 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     val eval = ArrayBuffer[(String, Transformer, DataFrame, (Long, Long))]()
 
     //LOGISTIC REGRESSION CLASSIFIER
-    val lr = new LogisticRegression()
-      .setRegParam(0.25)
-      .setElasticNetParam(0.5)
+    val lr = new LogisticRegression().setMaxIter(100).setRegParam(0.01).setElasticNetParam(0.8).setFamily("binomial")
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setFamily("binomial")
+
     val modelLR = lr.fit(trainingData)
     val predictionsLR = modelLR.transform(testData)
     eval.append(("LogisticRegression", modelLR, predictionsLR, (trainCount, testCount)))
@@ -55,12 +54,10 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     computeConfusionMatrix(predictionsLR)
 
     //DECISION TREES CLASSIFIER
-    val dt = new DecisionTreeClassifier()
+    val dt = new DecisionTreeClassifier().setMaxDepth(5).setMinInstancesPerNode(20).setImpurity("gini")
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setMaxDepth(5)
-      .setImpurity("gini")
-      .setMinInfoGain(2)
+
     val modelDT = dt.fit(trainingData)
     val predictionsDT = modelDT.transform(testData)
     eval.append(("DecisionTreeClassifier", modelDT, predictionsDT, (trainCount, testCount)))
@@ -68,15 +65,37 @@ class DiabetesTrainerActor extends AbstractClassificationTrainerActor {
     computeConfusionMatrix(predictionsDT)
 
     //RANDOM FOREST CLASSIFIER
-    val rf = new RandomForestClassifier()
+    val rf = new RandomForestClassifier().setNumTrees(100).setMaxDepth(5).setMinInstancesPerNode(20)
       .setLabelCol("label")
       .setFeaturesCol("features")
-      .setNumTrees(50)
+
     val modelRF = rf.fit(trainingData)
     val predictionsRF = modelRF.transform(testData)
     eval.append(("RandomForestClassifier", modelRF, predictionsRF, (trainCount, testCount)))
 
     computeConfusionMatrix(predictionsRF)
+
+    //GBT TREE CLASSIFIER
+    val gbt = new GBTClassifier().setMaxIter(50).setMaxDepth(5).setStepSize(0.1)
+      .setLabelCol("label")
+      .setFeaturesCol("features")
+
+    val modelGBT = gbt.fit(trainingData)
+    val predictionsGBT = modelGBT.transform(testData)
+    eval.append(("GBTClassifier", modelGBT, predictionsGBT, (trainCount, testCount)))
+
+    computeConfusionMatrix(predictionsGBT)
+
+    //LINEAR SVC
+    val svc = new LinearSVC().setMaxIter(100).setRegParam(0.01)
+      .setLabelCol("label")
+      .setFeaturesCol("features")
+
+    val modelSVC = svc.fit(trainingData)
+    val predictionsSVC = modelSVC.transform(testData)
+    eval.append(("LinearSVC", modelSVC, predictionsSVC, (trainCount, testCount)))
+
+    computeConfusionMatrix(predictionsSVC)
 
     eval.toList
   }

@@ -34,12 +34,12 @@ abstract class AbstractTrainerActor extends AbstractBaseActor {
   private def doTraining(): Unit = {
     log.info("Start training...")
 
-    val evals = doInternalTraining(spark)
+    val eValues = doInternalTraining(spark)
 
     val metrics = ArrayBuffer[(Transformer, Double)]()
-    for (eval <- evals) {
-      val value = calculateMetrics(eval._1, eval._3, eval._4)
-      metrics.append((eval._2, value))
+    for (eValue <- eValues) {
+      val value = calculateMetrics(eValue._1, eValue._3, eValue._4)
+      metrics.append((eValue._2, value))
     }
     val fittest = metrics.maxBy(_._2)._1
 
